@@ -24,6 +24,13 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <!-- end::actuator[] -->
+        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>1.62.0</version>
+        </dependency>
+
         <!-- tag::tests[] -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
