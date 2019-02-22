@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,10 @@ public class DeidentifyHandler {
         return String.join(",", (Iterable<String>) () -> record.iterator());
     }
 
+    private String getRecordSetHeaderAsString(CSVParser records) {
+        return String.join(",", records.getHeaderMap().keySet());
+    }
+
 
     public Map<String, String> gcsCsvToGcsCsv(GCSService gcsService, DLPService dlpService, String sourceBucket, String sourcePath, String destBucket, String destPath) throws IOException, GeneralSecurityException {
 
@@ -44,14 +49,20 @@ public class DeidentifyHandler {
         InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath );
 
         try(Reader inputStreamReader = new InputStreamReader(download)){
-            Iterable<CSVRecord> records = CSVFormat.DEFAULT.parse(inputStreamReader);
+            CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withSkipHeaderRecord(false).parse(inputStreamReader);
             CSVRecord outputRecord = null;
             ByteArrayInputStream targetStream = null;
             try (WriteChannel writer = gcsService.getWriter(destBucket, destPath)) {
+                byte[] headerContent = MessageFormat.format("{0},{1}\n",
+                        getRecordSetHeaderAsString(records),
+                        "empId Again"
+                ).getBytes(UTF_8);
+                writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
                 for (CSVRecord record : records) {
                     outputRecord = dlpService.deidentifyCSVRecord(record);
-                    byte[] content = MessageFormat.format("{0}\n",
-                            getCSVRecordAsString(record)
+                    byte[] content = MessageFormat.format("{0},{1}\n",
+                            getCSVRecordAsString(record),
+                            record.get("empId")
                     ).getBytes(UTF_8);
                     writer.write(ByteBuffer.wrap(content, 0, content.length));
                 }
