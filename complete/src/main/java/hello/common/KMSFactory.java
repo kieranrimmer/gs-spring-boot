@@ -32,6 +32,8 @@ import com.google.api.services.cloudkms.v1.CloudKMS;
 import com.google.api.services.cloudkms.v1.CloudKMSScopes;
 import com.google.api.services.cloudkms.v1.model.DecryptRequest;
 import com.google.api.services.cloudkms.v1.model.DecryptResponse;
+import com.google.api.services.cloudkms.v1.model.EncryptRequest;
+import com.google.api.services.cloudkms.v1.model.EncryptResponse;
 
 public class KMSFactory {
 
@@ -71,7 +73,27 @@ public class KMSFactory {
 			DecryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
 					.decrypt(cryptoKeyName, request).execute();
 
-			return response.getPlaintext().toString();
+			return response.getPlaintext();
+
+		}
+		return null;
+
+	}
+
+	public static String encrypt(String projectId, String locationId, String keyRingId, String cryptoKeyId,
+								 String plaintext) throws IOException, GeneralSecurityException {
+		// Create the Cloud KMS client.
+		if (projectId != null || keyRingId != null || cryptoKeyId != null || plaintext != null) {
+			CloudKMS kms = KMSFactory.getService();
+			// The resource name of the cryptoKey
+			String cryptoKeyName = String.format("projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s", projectId,
+					locationId, keyRingId, cryptoKeyId);
+
+			EncryptRequest request = new EncryptRequest().setPlaintext(plaintext);
+			EncryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
+					.encrypt(cryptoKeyName, request).execute();
+
+			return response.getCiphertext();
 
 		}
 		return null;

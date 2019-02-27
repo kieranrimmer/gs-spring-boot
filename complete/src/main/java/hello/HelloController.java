@@ -1,7 +1,9 @@
 package hello;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import hello.common.KMSFactory;
 import hello.dto.DeidentifyRequestPayload;
+import hello.dto.KmsKeyWrapPayload;
 import hello.dto.View;
 import hello.service.DLPService;
 import hello.service.GCSService;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.HashMap;
 import java.util.Map;
 
 import hello.handler.DeidentifyHandler;
@@ -70,8 +73,15 @@ public class HelloController {
         Map<String, String> map = deidentifyHandler.asyncHmacGcsCsvToGcsCsv(gcsService, dlpService,
                 requestBody.getSourceBucket(), requestBody.getSourceUrl(),
                 requestBody.getDestBucket(), requestBody.getDestUrl());
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
 
-
+    @RequestMapping(path = "wrapDEK", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, String>> encrypt(@RequestBody @JsonView(View.ApiV1.class) KmsKeyWrapPayload requestBody) throws IOException, GeneralSecurityException {
+        String wrappedKey = KMSFactory.encrypt(requestBody.getProjectId(), requestBody.getLocationId(), requestBody.getKeyRingId(), requestBody.getCryptoKeyId(),
+                requestBody.getPlaintext());
+        Map<String, String> map = new HashMap<>();
+        map.put("wrappedKey", wrappedKey);
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 

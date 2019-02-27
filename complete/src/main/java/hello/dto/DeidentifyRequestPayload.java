@@ -23,7 +23,7 @@ public class DeidentifyRequestPayload {
     private String destUrl;
 
     @JsonView(View.ApiV1.class)
-    private String kmsUrl;
+    private KmsKeyWrapPayload kmsKeyWrap;
 
     public String getSourceType() {
         return sourceType;
@@ -49,8 +49,8 @@ public class DeidentifyRequestPayload {
         return destUrl;
     }
 
-    public String getKmsUrl() {
-        return kmsUrl;
+    public KmsKeyWrapPayload getKeyWrap() {
+        return kmsKeyWrap;
     }
 
 }

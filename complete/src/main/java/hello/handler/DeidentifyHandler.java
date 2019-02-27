@@ -35,6 +35,9 @@ public class DeidentifyHandler {
     @Qualifier("CryptoMACService")
     private MacService macService;
 
+    private static final String SUCCESS_FLAG_SUFFIX = ".success_flag";
+    private static final String SUCCESS_MESSAGE = "success\n";
+
 
     private static final Logger logger = LoggerFactory.getLogger(DeidentifyHandler.class);
 
@@ -92,7 +95,7 @@ public class DeidentifyHandler {
             String sourceBucket, String sourcePath, String destBucket,
             String destPath) throws IOException, GeneralSecurityException {
 
-
+        String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
 
         Map<String, String> map = new HashMap<>();
         map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
@@ -132,6 +135,12 @@ public class DeidentifyHandler {
 
         } catch (Exception e) {
             logger.error("error reading from bucket " + sourceBucket + " and object " + sourcePath);
+        }
+        try (WriteChannel writer = gcsService.getWriter(destBucket, successFlagPath)) {
+            byte[] content = SUCCESS_MESSAGE.getBytes(UTF_8);
+            writer.write(ByteBuffer.wrap(content, 0, content.length));
+        } catch (Exception e) {
+            logger.error("error writing to bucket " + destBucket + " and object " + successFlagPath);
         }
         return map;
     }
