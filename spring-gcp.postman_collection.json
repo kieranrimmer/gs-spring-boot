@@ -1,0 +1,237 @@
+{
+	"info": {
+		"_postman_id": "7fab7437-cbde-4a06-a0c3-14e4409b156d",
+		"name": "spring-gcp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Base stub",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/writeGCSFRomCollection",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/writeGCSFRomCollection",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"writeGCSFRomCollection"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/writeGCSFRomCollectionInLoop",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/writeGCSFRomCollectionLoop",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"writeGCSFRomCollectionLoop"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/createDummyCSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/createDummyCSV",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"createDummyCSV"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "gcs to gcs deidentification",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/deidentifyDummyCSV",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"deidentifyDummyCSV"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "hmac-csv-to-csv",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/deidentifyHMAC",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"deidentifyHMAC"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post obfuscate hmac",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sourceBucket\": \"kr-bucket-01-01\",\n    \"sourceUrl\": \"dummy-csv.csv\",\n    \"destBucket\": \"kr-bucket-01-01\",\n    \"destUrl\": \"obfuscated-7-csv.csv\",\n    \"kmsKeyWrap\": {\n\t    \"projectId\": \"ga-kr-181510\",\n\t    \"locationId\": \"global\",\n\t    \"keyRingId\": \"kr-o1-01\",\n\t    \"cryptoKeyId\": \"key-test-01\",\n\t    \"ciphertext\": \"CiQA7qO0gIRph78z+Nzdq+QkctKZneYfDkaNY3+DWhqIhPnFb7kSWQA3aarFYy7GPYVmSB3oYa20vWLYC/X4sv4t0110IhRqgdBBPbtZEEgeXg603rGFEDejeb3rHxyYNdi3HPhIwrZcsJhd2YL/IDF48yDSxk5Jvclh+yBntDrD\"\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/deidentifyHMAC",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"deidentifyHMAC"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "wrap dek",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"projectId\": \"ga-kr-181510\",\n    \"locationId\": \"global\",\n    \"keyRingId\": \"kr-o1-01\",\n    \"cryptoKeyId\": \"key-test-01\",\n    \"plaintext\": \"5492ABB9AB00908F0AB7C78E43B731DDD7288B20F7F904388DD47C28A39F4122\"\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/wrapDEK",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"wrapDEK"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "unwrap dek",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"projectId\": \"ga-kr-181510\",\n    \"locationId\": \"global\",\n    \"keyRingId\": \"kr-o1-01\",\n    \"cryptoKeyId\": \"key-test-01\",\n    \"ciphertext\": \"CiQA7qO0gIRph78z+Nzdq+QkctKZneYfDkaNY3+DWhqIhPnFb7kSWQA3aarFYy7GPYVmSB3oYa20vWLYC/X4sv4t0110IhRqgdBBPbtZEEgeXg603rGFEDejeb3rHxyYNdi3HPhIwrZcsJhd2YL/IDF48yDSxk5Jvclh+yBntDrD\"\n}"
+				},
+				"url": {
+					"raw": "{{protocol}}://{{host}}:{{port}}/unwrapDEK",
+					"protocol": "{{protocol}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"unwrapDEK"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
