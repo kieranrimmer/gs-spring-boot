@@ -72,7 +72,7 @@ public class HelloController {
     public ResponseEntity<Map<String, String>> deidentifyWithKmsWrappedKey(@RequestBody @JsonView(View.ApiV1.class) DeidentifyRequestPayload requestBody) throws IOException, GeneralSecurityException {
         Map<String, String> map = deidentifyHandler.asyncHmacGcsCsvToGcsCsv(gcsService, dlpService,
                 requestBody.getSourceBucket(), requestBody.getSourceUrl(),
-                requestBody.getDestBucket(), requestBody.getDestUrl());
+                requestBody.getDestBucket(), requestBody.getDestUrl(), requestBody.getKeyWrap());
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
@@ -82,6 +82,15 @@ public class HelloController {
                 requestBody.getPlaintext());
         Map<String, String> map = new HashMap<>();
         map.put("wrappedKey", wrappedKey);
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
+    @RequestMapping(path = "unwrapDEK", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, String>> decrypt(@RequestBody @JsonView(View.ApiV1.class) KmsKeyWrapPayload requestBody) throws IOException, GeneralSecurityException {
+        String unwrappedKey = KMSFactory.decrypt(requestBody.getProjectId(), requestBody.getLocationId(), requestBody.getKeyRingId(), requestBody.getCryptoKeyId(),
+                requestBody.getCiphertext());
+        Map<String, String> map = new HashMap<>();
+        map.put("unwrappedKey", unwrappedKey);
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 

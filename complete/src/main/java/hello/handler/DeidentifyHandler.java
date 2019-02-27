@@ -1,6 +1,8 @@
 package hello.handler;
 
 import com.google.cloud.WriteChannel;
+import hello.common.KMSFactory;
+import hello.dto.KmsKeyWrapPayload;
 import hello.service.GCSProvider;
 import hello.service.GCSService;
 import hello.service.DLPService;
@@ -93,7 +95,11 @@ public class DeidentifyHandler {
     private Map<String, String> hmacGcsCsvToGcsCsv(
             GCSService gcsService, DLPService dlpService,
             String sourceBucket, String sourcePath, String destBucket,
-            String destPath) throws IOException, GeneralSecurityException {
+            String destPath, KmsKeyWrapPayload keyWrap) throws IOException, GeneralSecurityException {
+
+        String keyPlainText = KMSFactory.decrypt(keyWrap.getProjectId(), keyWrap.getLocationId(),
+                keyWrap.getKeyRingId(), keyWrap.getCryptoKeyId(),
+                keyWrap.getCiphertext());
 
         String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
 
@@ -101,12 +107,10 @@ public class DeidentifyHandler {
         map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
         map.put("deidentified", "gs://" + destBucket + "/" + destPath);
 
-        InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath );
-
-        String keyString = "FD5B357FAABEBD745A9E38AF";
+        InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath);
 
 
-        HmacUtils hmacUtils = macService.getHMACUtils((keyString + keyString).getBytes());
+        HmacUtils hmacUtils = macService.getHMACUtils(keyPlainText.getBytes());
 
         Set<Integer> colNosSensitive = new HashSet<>();
         colNosSensitive.add(1);
@@ -148,7 +152,7 @@ public class DeidentifyHandler {
     public Map<String, String> asyncHmacGcsCsvToGcsCsv(
             GCSService gcsService, DLPService dlpService,
             String sourceBucket, String sourcePath, String destBucket,
-            String destPath) {
+            String destPath, KmsKeyWrapPayload keyWrap) {
 
         Map<String, String> map = new HashMap<>();
         map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
@@ -156,7 +160,7 @@ public class DeidentifyHandler {
 
         Runnable task = () -> {
             try {
-                hmacGcsCsvToGcsCsv(gcsService, dlpService, sourceBucket, sourcePath, destBucket, destPath);
+                hmacGcsCsvToGcsCsv(gcsService, dlpService, sourceBucket, sourcePath, destBucket, destPath, keyWrap);
             } catch (Exception e) {
                 logger.warn("Async CSV write error");
             }
