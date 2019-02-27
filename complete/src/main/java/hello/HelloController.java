@@ -1,10 +1,14 @@
 package hello;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import hello.dto.DeidentifyRequestPayload;
+import hello.dto.View;
 import hello.service.DLPService;
 import hello.service.GCSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,11 +65,11 @@ public class HelloController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
-    @RequestMapping("deidentifyHMAC")
-    public ResponseEntity<Map<String, String>> deidentifyWithKmsWrappedKey() throws IOException, GeneralSecurityException {
-        Map<String, String> map = deidentifyHandler.hmacGcsCsvToGcsCsv(gcsService, dlpService,
-                "kr-bucket-01-01", "dummy-csv.csv",
-                "kr-bucket-01-01", "obfuscated-csv.csv");
+    @RequestMapping(path = "deidentifyHMAC", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, String>> deidentifyWithKmsWrappedKey(@RequestBody @JsonView(View.ApiV1.class) DeidentifyRequestPayload requestBody) throws IOException, GeneralSecurityException {
+        Map<String, String> map = deidentifyHandler.asyncHmacGcsCsvToGcsCsv(gcsService, dlpService,
+                requestBody.getSourceBucket(), requestBody.getSourceUrl(),
+                requestBody.getDestBucket(), requestBody.getDestUrl());
 
 
         return new ResponseEntity<>(map, HttpStatus.OK);

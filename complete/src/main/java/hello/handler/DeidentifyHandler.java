@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import hello.service.MacService;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -27,6 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Component("DeidentifyHandler")
 public class DeidentifyHandler {
 
+    ExecutorService executor = Executors.newFixedThreadPool(10);
 
     @Autowired
     @Qualifier("CryptoMACService")
@@ -84,7 +87,7 @@ public class DeidentifyHandler {
         return map;
     }
 
-    public Map<String, String> hmacGcsCsvToGcsCsv(
+    private Map<String, String> hmacGcsCsvToGcsCsv(
             GCSService gcsService, DLPService dlpService,
             String sourceBucket, String sourcePath, String destBucket,
             String destPath) throws IOException, GeneralSecurityException {
@@ -118,7 +121,7 @@ public class DeidentifyHandler {
                 writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
                 for (CSVRecord record : records) {
                     // record.
-                    outputRecord = macService.getRedactedCSVRecordAsString(hmacUtils, record, colNosSensitive);
+                    outputRecord = macService.getRedactedCSVRecordAsString(hmacUtils, record, colNosSensitive) + "\n";
                     byte[] content = outputRecord.getBytes(UTF_8);
                     writer.write(ByteBuffer.wrap(content, 0, content.length));
                 }
@@ -131,6 +134,28 @@ public class DeidentifyHandler {
             logger.error("error reading from bucket " + sourceBucket + " and object " + sourcePath);
         }
         return map;
+    }
+
+    public Map<String, String> asyncHmacGcsCsvToGcsCsv(
+            GCSService gcsService, DLPService dlpService,
+            String sourceBucket, String sourcePath, String destBucket,
+            String destPath) {
+
+        Map<String, String> map = new HashMap<>();
+        map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
+        map.put("deidentified", "gs://" + destBucket + "/" + destPath);
+
+        Runnable task = () -> {
+            try {
+                hmacGcsCsvToGcsCsv(gcsService, dlpService, sourceBucket, sourcePath, destBucket, destPath);
+            } catch (Exception e) {
+                logger.warn("Async CSV write error");
+            }
+        };
+        executor.submit(task);
+
+        return map;
+
     }
 
 }
