@@ -27,6 +27,9 @@ import hello.handler.DeidentifyHandler;
 public class HelloController {
 
     @Autowired
+    private YAMLConfig myConfig;
+
+    @Autowired
     GCSService gcsService;
 
     @Autowired
@@ -37,7 +40,7 @@ public class HelloController {
     
     @RequestMapping("")
     public String index() {
-        return "Greetings from Spring Boot!";
+        return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
     }
 
     @RequestMapping(value = "writeGCSFRomCollection")
