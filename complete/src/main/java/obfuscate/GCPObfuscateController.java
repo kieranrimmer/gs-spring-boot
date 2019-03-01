@@ -81,11 +81,15 @@ public class GCPObfuscateController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
-    @RequestMapping(path = "deidentifyHMAC", method = RequestMethod.POST)
+    @RequestMapping(path = "deidentifyWrappedHMAC", method = RequestMethod.POST)
     public ResponseEntity<Map<String, String>> deidentifyWithKmsWrappedKey(@RequestBody @JsonView(View.ApiV1.class) DeidentifyRequestPayload requestBody) throws IOException, GeneralSecurityException {
-        Map<String, String> map = deidentifyHandler.asyncHmacGcsCsvToGcsCsv(gcsService, dlpService,
-                requestBody.getSourceBucket(), requestBody.getSourceUrl(),
-                requestBody.getDestBucket(), requestBody.getDestUrl(), requestBody.getKeyWrap());
+        Map<String, String> map = deidentifyHandler.asyncWrappedHmacGcsCsvToGcsCsv(gcsService, requestBody, requestBody.getKeyWrap());
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
+    @RequestMapping(path = "deidentifyUnwrappedHMAC", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, String>> deidentifyWithUnWrappedKey(@RequestBody @JsonView(View.ApiV1.class) DeidentifyRequestPayload requestBody) throws IOException, GeneralSecurityException {
+        Map<String, String> map = deidentifyHandler.asyncUnwrappedHmacGcsCsvToGcsCsv(gcsService, requestBody, requestBody.getKeyWrap());
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 

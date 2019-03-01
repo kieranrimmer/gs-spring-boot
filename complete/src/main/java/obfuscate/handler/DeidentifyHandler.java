@@ -2,6 +2,7 @@ package obfuscate.handler;
 
 import com.google.cloud.WriteChannel;
 import obfuscate.common.KMSFactory;
+import obfuscate.dto.DeidentifyRequestPayload;
 import obfuscate.dto.KmsKeyWrapPayload;
 import obfuscate.service.GCSService;
 import obfuscate.service.DLPService;
@@ -67,16 +68,14 @@ public class DeidentifyHandler {
             CSVRecord outputRecord = null;
             ByteArrayInputStream targetStream = null;
             try (WriteChannel writer = gcsService.getWriter(destBucket, destPath)) {
-                byte[] headerContent = MessageFormat.format("{0},{1}\n",
-                        getRecordSetHeaderAsString(records),
-                        "empId Again"
+                byte[] headerContent = MessageFormat.format("{0}s\n",
+                        getRecordSetHeaderAsString(records)
                 ).getBytes(UTF_8);
                 writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
                 for (CSVRecord record : records) {
                     outputRecord = dlpService.deidentifyCSVRecord(record);
-                    byte[] content = MessageFormat.format("{0},{1}\n",
-                            getCSVRecordAsString(record),
-                            record.get("empId")
+                    byte[] content = MessageFormat.format("{0}\n",
+                            getCSVRecordAsString(record)
                     ).getBytes(UTF_8);
                     writer.write(ByteBuffer.wrap(content, 0, content.length));
                 }
@@ -91,38 +90,19 @@ public class DeidentifyHandler {
         return map;
     }
 
-    private Map<String, String> hmacGcsCsvToGcsCsv(
-            GCSService gcsService, DLPService dlpService,
-            String sourceBucket, String sourcePath, String destBucket,
-            String destPath, KmsKeyWrapPayload keyWrap) throws IOException, GeneralSecurityException {
-
-        String keyPlainText = KMSFactory.decrypt(keyWrap.getProjectId(), keyWrap.getLocationId(),
-                keyWrap.getKeyRingId(), keyWrap.getCryptoKeyId(),
-                keyWrap.getCiphertext());
-
-        String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
-
-        Map<String, String> map = new HashMap<>();
-        map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
-        map.put("deidentified", "gs://" + destBucket + "/" + destPath);
+    private void transferAndHmacWithinGCS(HmacUtils hmacUtils, GCSService gcsService, String sourceBucket, String sourcePath,
+                        String destBucket, String destPath, String successFlagPath,
+                        Set<Integer> colNosSensitive) throws IOException, GeneralSecurityException {
 
         InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath);
-
-
-        HmacUtils hmacUtils = macService.getHMACUtils(keyPlainText.getBytes());
-
-        Set<Integer> colNosSensitive = new HashSet<>();
-        colNosSensitive.add(1);
-        colNosSensitive.add(2);
 
         try(Reader inputStreamReader = new InputStreamReader(download)){
             CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withSkipHeaderRecord(false).parse(inputStreamReader);
             String outputRecord = null;
             ByteArrayInputStream targetStream = null;
             try (WriteChannel writer = gcsService.getWriter(destBucket, destPath)) {
-                byte[] headerContent = MessageFormat.format("{0},{1}\n",
-                        getRecordSetHeaderAsString(records),
-                        "empId Again"
+                byte[] headerContent = MessageFormat.format("{0}\n",
+                        getRecordSetHeaderAsString(records)
                 ).getBytes(UTF_8);
                 writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
                 for (CSVRecord record : records) {
@@ -145,28 +125,100 @@ public class DeidentifyHandler {
         } catch (Exception e) {
             logger.error("error writing to bucket " + destBucket + " and object " + successFlagPath);
         }
-        return map;
     }
 
-    public Map<String, String> asyncHmacGcsCsvToGcsCsv(
-            GCSService gcsService, DLPService dlpService,
-            String sourceBucket, String sourcePath, String destBucket,
-            String destPath, KmsKeyWrapPayload keyWrap) {
+    private void doHmacGcsTransfer(
+                            HmacUtils hmacUtils, GCSService gcsService,
+                            DeidentifyRequestPayload requestBody) throws IOException, GeneralSecurityException {
 
+        String sourceBucket = requestBody.getSourceBucket();
+        String sourcePath = requestBody.getSourceUrl();
+        String destBucket = requestBody.getDestBucket();
+        String destPath = requestBody.getDestUrl();
+
+        String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
+
+        InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath);
+
+        // TODO: remove this garbage
+        Set<Integer> colNosSensitive = new HashSet<>();
+        colNosSensitive.add(1);
+        colNosSensitive.add(2);
+
+        transferAndHmacWithinGCS(hmacUtils, gcsService, sourceBucket, sourcePath, destBucket, destPath, successFlagPath, colNosSensitive);
+
+    }
+
+    private void unwrappedHmacGcsCsvToGcsCsv(
+            GCSService gcsService,
+            DeidentifyRequestPayload requestBody,
+            KmsKeyWrapPayload keyWrap) throws IOException, GeneralSecurityException {
+
+        HmacUtils hmacUtils = macService.getHMACUtils(keyWrap.getPlaintext().getBytes());
+
+        doHmacGcsTransfer(hmacUtils, gcsService, requestBody);
+    }
+
+    private void wrappedHmacGcsCsvToGcsCsv(
+            GCSService gcsService,
+            DeidentifyRequestPayload requestBody,
+            KmsKeyWrapPayload keyWrap) throws IOException, GeneralSecurityException {
+
+        String sourceBucket = requestBody.getSourceBucket();
+        String sourcePath = requestBody.getSourceUrl();
+        String destBucket = requestBody.getDestBucket();
+        String destPath = requestBody.getDestUrl();
+
+        String keyPlainText = KMSFactory.decrypt(keyWrap.getProjectId(), keyWrap.getLocationId(),
+                keyWrap.getKeyRingId(), keyWrap.getCryptoKeyId(),
+                keyWrap.getCiphertext());
+
+        HmacUtils hmacUtils = macService.getHMACUtils(keyPlainText.getBytes());
+
+        doHmacGcsTransfer(hmacUtils, gcsService, requestBody);
+    }
+
+    private Map<String, String> generateHmacGCSTransferResponseMap(DeidentifyRequestPayload requestBody) {
         Map<String, String> map = new HashMap<>();
-        map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
-        map.put("deidentified", "gs://" + destBucket + "/" + destPath);
+        map.put("plaintext", "gs://" + requestBody.getSourceBucket() + "/" + requestBody.getSourceUrl());
+        map.put("deidentified", "gs://" + requestBody.getDestBucket() + "/" + requestBody.getDestUrl());
+        return map;
+
+    }
+
+    public Map<String, String> asyncWrappedHmacGcsCsvToGcsCsv(
+            GCSService gcsService,
+            DeidentifyRequestPayload requestBody,
+            KmsKeyWrapPayload keyWrap) {
 
         Runnable task = () -> {
             try {
-                hmacGcsCsvToGcsCsv(gcsService, dlpService, sourceBucket, sourcePath, destBucket, destPath, keyWrap);
+                wrappedHmacGcsCsvToGcsCsv(gcsService, requestBody, keyWrap);
             } catch (Exception e) {
                 logger.warn("Async CSV write error");
             }
         };
         executor.submit(task);
 
-        return map;
+        return generateHmacGCSTransferResponseMap(requestBody);
+
+    }
+
+    public Map<String, String> asyncUnwrappedHmacGcsCsvToGcsCsv(
+            GCSService gcsService,
+            DeidentifyRequestPayload requestBody,
+            KmsKeyWrapPayload keyWrap) {
+
+        Runnable task = () -> {
+            try {
+                unwrappedHmacGcsCsvToGcsCsv(gcsService, requestBody, keyWrap);
+            } catch (Exception e) {
+                logger.warn("Async CSV write error");
+            }
+        };
+        executor.submit(task);
+
+        return generateHmacGCSTransferResponseMap(requestBody);
 
     }
 
