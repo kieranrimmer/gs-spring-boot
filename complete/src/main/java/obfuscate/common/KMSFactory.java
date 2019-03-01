@@ -47,6 +47,11 @@ public class KMSFactory {
 		return instance;
 	}
 
+	// for testing
+	public static synchronized void setService(CloudKMS service) {
+		instance = service;
+	}
+
 	private static CloudKMS buildService() throws IOException, GeneralSecurityException {
 		HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
 		JsonFactory jsonFactory = new JacksonFactory();
