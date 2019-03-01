@@ -31,7 +31,6 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 
-/** This class contains a number of snippets for the {@link Storage} interface. */
 public class GCSProvider {
 
     private final Storage storage;

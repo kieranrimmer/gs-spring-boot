@@ -31,7 +31,7 @@ public class KMSFactoryTest {
     }
 
     @Test
-    public void basicTest() throws Exception {
+    public void basicDecryptionTest() throws Exception {
 
         // Because Mockito cannot mock a final class
         DecryptResponse response = new DecryptResponse();
