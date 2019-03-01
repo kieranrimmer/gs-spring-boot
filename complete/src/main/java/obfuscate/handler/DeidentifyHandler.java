@@ -31,11 +31,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Component("DeidentifyHandler")
 public class DeidentifyHandler {
 
-    ExecutorService executor = Executors.newFixedThreadPool(10);
+    private ExecutorService executor = Executors.newFixedThreadPool(10);
 
     @Autowired
     @Qualifier("CryptoMACService")
     private MacService macService;
+
+    public void setExecutor(ExecutorService _executor) {
+        executor = _executor;
+    }
 
     private static final String SUCCESS_FLAG_SUFFIX = ".success_flag";
     private static final String SUCCESS_MESSAGE = "success\n";

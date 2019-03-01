@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import obfuscate.handler.DeidentifyHandler;
 import obfuscate.service.DLPService;
 import obfuscate.service.GCSService;
+import obfuscate.service.MacService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +48,7 @@ public class GCPObfuscateControllerTest {
     YAMLConfig yamlConfig;
 
     @Mock
-    GCSService gcsService;
+    private MacService macService;
 
     @Spy
     DeidentifyHandler deidentifyHandler;
