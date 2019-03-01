@@ -23,7 +23,7 @@ spring-boot:run -Dspring.profiles.active=dev
 `Command line` option in IntelliJ profile:
 
 ```
-test -Dspring.profiles.active=test
+test -Dspring.profiles.active=test -DforkMode=never
 ```
 
 ## Provenance

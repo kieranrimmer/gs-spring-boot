@@ -37,9 +37,19 @@ public class GCPObfuscateController {
 
     @Autowired
     DeidentifyHandler deidentifyHandler;
+
+    // Required for unit testing
+    public void setMyConfig(YAMLConfig config) {
+        myConfig = config;
+    }
     
     @RequestMapping("")
     public String index() {
+        return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
+    }
+
+    @RequestMapping("/hello")
+    public String helloMessage() {
         return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
     }
 
