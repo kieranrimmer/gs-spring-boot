@@ -132,5 +132,7 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.powermock:powermock-reflect:2.0.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.powermock:powermock-core:2.0.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.javassist:javassist:3.24.0-GA" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.powermock:powermock-api-mockito2:2.0.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.powermock:powermock-api-support:2.0.0" level="project" />
   </component>
 </module>
