@@ -18,4 +18,12 @@ public class GCSObjectPayload {
         return url;
     }
 
+    public void setBucket(String bucket) {
+        this.bucket = bucket;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
 }

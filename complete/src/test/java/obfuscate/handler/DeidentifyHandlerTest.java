@@ -54,13 +54,22 @@ public class DeidentifyHandlerTest {
 
     }
 
+    private static GCSObjectPayload generateDummyGCSPayload(String bucket, String url) {
+        GCSObjectPayload payload = new GCSObjectPayload();
+        payload.setBucket(bucket);
+        payload.setUrl(url);
+        return payload;
+    }
+
 
     @Test
     public void createDummyCsvTest() throws Exception {
+        String testBucket = "testBucket";
+        String testUrl = "testUrl";
         GCSService mockGcsService = mock(GCSService.class);
-        GCSObjectPayload mockPayload = mock(GCSObjectPayload.class);
+        GCSObjectPayload mockPayload = generateDummyGCSPayload(testBucket, testUrl);
         handlerUnderTest.asyncCreateDummyCSV(mockGcsService, mockPayload);
-        verify(mockGcsService, times(1)).createDummyCSV(any(), any());
+        verify(mockGcsService, times(1)).createDummyCSV(testBucket, testUrl);
     }
 
 

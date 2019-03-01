@@ -66,7 +66,7 @@ public class GCSProviderTest {
 
         serviceUnderTest.getWriter("bucketName", "blobName");
 
-        verify(storage, times(1)).writer(any());
+        verify(storage, times(1)).writer(mockBlobInfo);
 
 
 
