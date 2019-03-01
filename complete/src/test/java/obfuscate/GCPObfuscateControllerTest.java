@@ -88,7 +88,7 @@ public class GCPObfuscateControllerTest {
     }
 
     @Test
-    public void getHello() throws Exception {
+    public void getSillyWriteGCS() throws Exception {
         int i=0;
         MvcResult result =  mockMvc.perform(MockMvcRequestBuilders.get("/writeGCSFRomCollection").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
