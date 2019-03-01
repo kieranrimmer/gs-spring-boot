@@ -1,7 +1,19 @@
 
-## Basic Setup
+## Basic Setup for Development
+
+### Environmental variables
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="{path to service account json private key}"
+```
 
 ### IntelliJ development
+
+#### Setting Env Var for Maven
+
+Go to  `IntelliJ Idea` > `Preferences` > `Build, Execution, Deployment` >  `Build Tools` > `Maven` >  `Runner`...
+
+Then add the Env Var(s) as above manually.
 
 #### Configurations
 
