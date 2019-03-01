@@ -2,6 +2,8 @@ package obfuscate.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import java.util.List;
+
 public class DeidentifyRequestPayload {
 
     @JsonView(View.ApiV1.class)
@@ -21,6 +23,10 @@ public class DeidentifyRequestPayload {
 
     @JsonView(View.ApiV1.class)
     private String destUrl;
+
+    @JsonView(View.ApiV1.class)
+    private List<Integer> obfuscationColumns;
+
 
     @JsonView(View.ApiV1.class)
     private KmsKeyWrapPayload kmsKeyWrap;
@@ -51,6 +57,10 @@ public class DeidentifyRequestPayload {
 
     public KmsKeyWrapPayload getKeyWrap() {
         return kmsKeyWrap;
+    }
+
+    public List<Integer> getObfuscationColumns() {
+        return obfuscationColumns;
     }
 
 }

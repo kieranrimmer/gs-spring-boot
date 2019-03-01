@@ -135,15 +135,11 @@ public class DeidentifyHandler {
         String sourcePath = requestBody.getSourceUrl();
         String destBucket = requestBody.getDestBucket();
         String destPath = requestBody.getDestUrl();
+        Set<Integer> colNosSensitive = new HashSet<>(requestBody.getObfuscationColumns());
 
         String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
 
         InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath);
-
-        // TODO: remove this garbage
-        Set<Integer> colNosSensitive = new HashSet<>();
-        colNosSensitive.add(1);
-        colNosSensitive.add(2);
 
         transferAndHmacWithinGCS(hmacUtils, gcsService, sourceBucket, sourcePath, destBucket, destPath, successFlagPath, colNosSensitive);
 
