@@ -2,6 +2,7 @@ package obfuscate.common;
 
 import com.google.api.services.cloudkms.v1.CloudKMS;
 import com.google.api.services.cloudkms.v1.model.DecryptResponse;
+import com.google.api.services.cloudkms.v1.model.EncryptResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
@@ -16,7 +17,8 @@ public class KMSFactoryTest {
 
     private CloudKMS mockCloudKms;
 
-    private static final String TEST_DECRYPT_RESPONSE = "test_response";
+    private static final String TEST_DECRYPT_RESPONSE = "test_decryption_response";
+    private static final String TEST_ENCRYPT_RESPONSE = "test_encryption_response";
 
     @Before
     public void setup() {
@@ -58,6 +60,37 @@ public class KMSFactoryTest {
                 "crypto-key-id", "ciphertext");
 
         assertThat(decrypted, is(TEST_DECRYPT_RESPONSE));
+
+    }
+
+    @Test
+    public void basicEncryptionTest() throws Exception {
+
+        // Because Mockito cannot mock a final class
+        EncryptResponse response = new EncryptResponse();
+        response.setCiphertext(TEST_ENCRYPT_RESPONSE);
+        //
+
+        CloudKMS.Projects mockProjects = mock(CloudKMS.Projects.class);
+        when(mockCloudKms.projects()).thenReturn(mockProjects);
+
+        CloudKMS.Projects.Locations mockLocations = mock(CloudKMS.Projects.Locations.class);
+        when(mockProjects.locations()).thenReturn(mockLocations);
+
+        CloudKMS.Projects.Locations.KeyRings mockKeyRings = mock(CloudKMS.Projects.Locations.KeyRings.class);
+        when(mockLocations.keyRings()).thenReturn(mockKeyRings);
+
+        CloudKMS.Projects.Locations.KeyRings.CryptoKeys mockCryptoKeys = mock(CloudKMS.Projects.Locations.KeyRings.CryptoKeys.class);
+        when(mockKeyRings.cryptoKeys()).thenReturn(mockCryptoKeys);
+
+        CloudKMS.Projects.Locations.KeyRings.CryptoKeys.Encrypt mockEncryptObject = mock(CloudKMS.Projects.Locations.KeyRings.CryptoKeys.Encrypt.class);
+        when(mockCryptoKeys.encrypt(any(), any())).thenReturn(mockEncryptObject);
+
+        when(mockEncryptObject.execute()).thenReturn(response);
+        String encrypted = KMSFactory.encrypt("project-id", "location-id", "keyring-id",
+                "crypto-key-id", "ciphertext");
+
+        assertThat(encrypted, is(TEST_ENCRYPT_RESPONSE));
 
     }
 
