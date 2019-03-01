@@ -46,12 +46,8 @@ public class GCPObfuscateControllerTest {
     @Autowired
     YAMLConfig yamlConfig;
 
-
     @Mock
     GCSService gcsService;
-
-    @Mock
-    DLPService dlpService;
 
     @Spy
     DeidentifyHandler deidentifyHandler;
@@ -88,23 +84,17 @@ public class GCPObfuscateControllerTest {
     }
 
     @Test
-    public void getSillyWriteGCS() throws Exception {
-        int i=0;
-        MvcResult result =  mockMvc.perform(MockMvcRequestBuilders.get("/writeGCSFRomCollection").accept(MediaType.APPLICATION_JSON))
+    public void postSillyWriteGCS() throws Exception {
+        MvcResult result =  mockMvc.perform(MockMvcRequestBuilders.post("/createDummyGcsCSV")
+                .content("{\"bucket\": \"fake-bucket\", \"url\": \"fake-url\"}")
+                .header("Content-Type", "application/json")
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("{}")))
+                .andExpect(content().string(equalTo("{\"gcsObject\":\"gs://fake-bucket/fake-url\"}")))
                 .andReturn();
         String resultString = result.getResponse().getContentAsString();
         assert resultString != null;
     }
 
-
-    @Test
-    public void getWriteSilly() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/writeGCSFRomCollection").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                // .andExpect(content().string(equalTo("Welcome to the `test` environment.")))
-                ;
-    }
 
 }

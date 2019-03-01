@@ -3,9 +3,9 @@ package obfuscate.handler;
 import com.google.cloud.WriteChannel;
 import obfuscate.common.KMSFactory;
 import obfuscate.dto.DeidentifyRequestPayload;
+import obfuscate.dto.GCSObjectPayload;
 import obfuscate.dto.KmsKeyWrapPayload;
 import obfuscate.service.GCSService;
-import obfuscate.service.DLPService;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -40,54 +40,10 @@ public class DeidentifyHandler {
     private static final String SUCCESS_FLAG_SUFFIX = ".success_flag";
     private static final String SUCCESS_MESSAGE = "success\n";
 
-
     private static final Logger logger = LoggerFactory.getLogger(DeidentifyHandler.class);
-
-
-    private String getCSVRecordAsString(CSVRecord record) {
-        return String.join(",", (Iterable<String>) () -> record.iterator());
-    }
 
     private String getRecordSetHeaderAsString(CSVParser records) {
         return String.join(",", records.getHeaderMap().keySet());
-    }
-
-
-    public Map<String, String> gcsCsvToGcsCsv(GCSService gcsService, DLPService dlpService, String sourceBucket, String sourcePath, String destBucket, String destPath) throws IOException, GeneralSecurityException {
-
-
-
-        Map<String, String> map = new HashMap<>();
-        map.put("plaintext", "gs://" + sourceBucket + "/" + sourcePath);
-        map.put("deidentified", "gs://" + destBucket + "/" + destPath);
-
-        InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath );
-
-        try(Reader inputStreamReader = new InputStreamReader(download)){
-            CSVParser records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withSkipHeaderRecord(false).parse(inputStreamReader);
-            CSVRecord outputRecord = null;
-            ByteArrayInputStream targetStream = null;
-            try (WriteChannel writer = gcsService.getWriter(destBucket, destPath)) {
-                byte[] headerContent = MessageFormat.format("{0}s\n",
-                        getRecordSetHeaderAsString(records)
-                ).getBytes(UTF_8);
-                writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
-                for (CSVRecord record : records) {
-                    outputRecord = dlpService.deidentifyCSVRecord(record);
-                    byte[] content = MessageFormat.format("{0}\n",
-                            getCSVRecordAsString(record)
-                    ).getBytes(UTF_8);
-                    writer.write(ByteBuffer.wrap(content, 0, content.length));
-                }
-
-            } catch (Exception e) {
-                logger.error("error writing to bucket " + destBucket + " and object " + destPath);
-            }
-
-        } catch (Exception e) {
-            logger.error("error reading from bucket " + sourceBucket + " and object " + sourcePath);
-        }
-        return map;
     }
 
     private void transferAndHmacWithinGCS(HmacUtils hmacUtils, GCSService gcsService, String sourceBucket, String sourcePath,
@@ -106,7 +62,6 @@ public class DeidentifyHandler {
                 ).getBytes(UTF_8);
                 writer.write(ByteBuffer.wrap(headerContent, 0, headerContent.length));
                 for (CSVRecord record : records) {
-                    // record.
                     outputRecord = macService.getRedactedCSVRecordAsString(hmacUtils, record, colNosSensitive) + "\n";
                     byte[] content = outputRecord.getBytes(UTF_8);
                     writer.write(ByteBuffer.wrap(content, 0, content.length));
@@ -139,8 +94,6 @@ public class DeidentifyHandler {
 
         String successFlagPath = destPath + SUCCESS_FLAG_SUFFIX;
 
-        InputStream download = gcsService.downloadNoUserEncryption(sourceBucket, sourcePath);
-
         transferAndHmacWithinGCS(hmacUtils, gcsService, sourceBucket, sourcePath, destBucket, destPath, successFlagPath, colNosSensitive);
 
     }
@@ -160,11 +113,6 @@ public class DeidentifyHandler {
             DeidentifyRequestPayload requestBody,
             KmsKeyWrapPayload keyWrap) throws IOException, GeneralSecurityException {
 
-        String sourceBucket = requestBody.getSourceBucket();
-        String sourcePath = requestBody.getSourceUrl();
-        String destBucket = requestBody.getDestBucket();
-        String destPath = requestBody.getDestUrl();
-
         String keyPlainText = KMSFactory.decrypt(keyWrap.getProjectId(), keyWrap.getLocationId(),
                 keyWrap.getKeyRingId(), keyWrap.getCryptoKeyId(),
                 keyWrap.getCiphertext());
@@ -179,7 +127,12 @@ public class DeidentifyHandler {
         map.put("plaintext", "gs://" + requestBody.getSourceBucket() + "/" + requestBody.getSourceUrl());
         map.put("deidentified", "gs://" + requestBody.getDestBucket() + "/" + requestBody.getDestUrl());
         return map;
+    }
 
+    private Map<String, String> generateDummyCsvResponseMap(GCSObjectPayload requestBody) {
+        Map<String, String> map = new HashMap<>();
+        map.put("gcsObject", "gs://" + requestBody.getBucket() + "/" + requestBody.getUrl());
+        return map;
     }
 
     public Map<String, String> asyncWrappedHmacGcsCsvToGcsCsv(
@@ -215,6 +168,32 @@ public class DeidentifyHandler {
         executor.submit(task);
 
         return generateHmacGCSTransferResponseMap(requestBody);
+
+    }
+
+    private void createDummyCSV(
+            GCSService gcsService,
+            GCSObjectPayload requestBody) {
+
+        gcsService.createDummyCSV(requestBody.getBucket(), requestBody.getUrl());
+
+    }
+
+
+    public Map<String, String> asyncCreateDummyCSV(
+            GCSService gcsService,
+            GCSObjectPayload requestBody) {
+
+        Runnable task = () -> {
+            try {
+                createDummyCSV(gcsService, requestBody);
+            } catch (Exception e) {
+                logger.warn("Async CSV write error");
+            }
+        };
+        executor.submit(task);
+
+        return generateDummyCsvResponseMap(requestBody);
 
     }
 

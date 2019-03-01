@@ -3,9 +3,9 @@ package obfuscate;
 import com.fasterxml.jackson.annotation.JsonView;
 import obfuscate.common.KMSFactory;
 import obfuscate.dto.DeidentifyRequestPayload;
+import obfuscate.dto.GCSObjectPayload;
 import obfuscate.dto.KmsKeyWrapPayload;
 import obfuscate.dto.View;
-import obfuscate.service.DLPService;
 import obfuscate.service.GCSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,9 +33,6 @@ public class GCPObfuscateController {
     GCSService gcsService;
 
     @Autowired
-    DLPService dlpService;
-
-    @Autowired
     DeidentifyHandler deidentifyHandler;
 
     // Required for unit testing
@@ -53,31 +50,9 @@ public class GCPObfuscateController {
         return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
     }
 
-    @RequestMapping(value = "writeGCSFRomCollection")
-    public ResponseEntity<Map<String, String>> writeGCSFRomCollection() throws IOException {
-        Map<String, String> map = gcsService.writeToBucket("kr-bucket-01-01", "crap-file.csv");
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "writeGCSFRomCollectionLoop")
-    public ResponseEntity<Map<String, String>> writeGCSFRomCollectionLoop() throws IOException {
-        Map<String, String> map = gcsService.writeToBucketInLoop("kr-bucket-01-01", "crap-file.csv");
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "createDummyCSV")
-    public ResponseEntity<Map<String, String>> writeCSVFromLoop() throws IOException {
-        Map<String, String> map = gcsService.createDummyCSV("kr-bucket-01-01", "dummy-csv.csv");
-        return new ResponseEntity<>(map, HttpStatus.OK);
-    }
-
-    @RequestMapping("deidentifyDummyCSV")
-    public ResponseEntity<Map<String, String>> deidentifyDummyCSV() throws IOException, GeneralSecurityException {
-        Map<String, String> map = deidentifyHandler.gcsCsvToGcsCsv(gcsService, dlpService,
-                "kr-bucket-01-01", "dummy-csv.csv",
-                "kr-bucket-01-01", "obfuscated-csv.csv");
-
-
+    @RequestMapping(value = "createDummyGcsCSV", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, String>> createDummyCsv(@RequestBody @JsonView(View.ApiV1.class) GCSObjectPayload requestBody) throws IOException {
+        Map<String, String> map = deidentifyHandler.asyncCreateDummyCSV(gcsService, requestBody);
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
