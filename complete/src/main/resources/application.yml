@@ -14,3 +14,12 @@ environment: production
 servers:
     - www.abc.com
     - www.xyz.com
+
+---
+spring:
+    profiles: dev
+name: dev-YAML
+environment: development
+servers:
+    - www.abc.com
+    - www.xyz.com

@@ -1,4 +1,4 @@
-package hello;
+package obfuscate;
 
 import java.util.Arrays;
 
