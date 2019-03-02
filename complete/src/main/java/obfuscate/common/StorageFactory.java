@@ -36,9 +36,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.StorageScopes;
-// import com.google.api.services.storage.
-
-// import com.google.cloud.storage.Storage;
 
 
 public class StorageFactory {

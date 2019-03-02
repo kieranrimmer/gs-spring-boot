@@ -5,8 +5,6 @@ import com.google.api.services.cloudkms.v1.model.DecryptResponse;
 import com.google.api.services.cloudkms.v1.model.EncryptResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockitoAnnotations;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;

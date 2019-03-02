@@ -177,20 +177,22 @@ public class DeidentifyHandler {
 
     private void createDummyCSV(
             GCSService gcsService,
-            GCSObjectPayload requestBody) {
+            GCSObjectPayload requestBody,
+            int rowCount) {
 
-        gcsService.createDummyCSV(requestBody.getBucket(), requestBody.getUrl());
+        gcsService.createDummyCSV(requestBody.getBucket(), requestBody.getUrl(), rowCount);
 
     }
 
 
     public Map<String, String> asyncCreateDummyCSV(
             GCSService gcsService,
-            GCSObjectPayload requestBody) {
+            GCSObjectPayload requestBody,
+            int rowCount) {
 
         Runnable task = () -> {
             try {
-                createDummyCSV(gcsService, requestBody);
+                createDummyCSV(gcsService, requestBody, rowCount);
             } catch (Exception e) {
                 logger.warn("Async CSV write error");
             }

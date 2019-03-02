@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,7 +64,7 @@ public class GCPObfuscateControllerTest {
 
         MockitoAnnotations.initMocks(this);
 
-        controllerUnderTest.setMyConfig(yamlConfig);
+        controllerUnderTest.setConfig(yamlConfig);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controllerUnderTest).build();
 
@@ -83,16 +82,16 @@ public class GCPObfuscateControllerTest {
 
     @Test
     public void postSillyWriteGCS() throws Exception {
+
+        String jsonPayload = "{ \"gcsObject\": {\"bucket\": \"fake-bucket\", \"url\": \"fake-url\"}, \"rowCount\": 100000}";
+
         MvcResult result =  mockMvc.perform(MockMvcRequestBuilders.post("/createDummyGcsCSV")
-                .content("{\"bucket\": \"fake-bucket\", \"url\": \"fake-url\"}")
+                .content(jsonPayload)
                 .header("Content-Type", "application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                // .andExpect(content().string(equalTo("{\"gcsObject\":\"gs://fake-bucket/fake-url\"}")))
                 .andExpect(content().string(equalTo("{}")))
                 .andReturn();
-        // String resultString = result.getResponse().getContentAsString();
-        // assert resultString != null;
     }
 
 

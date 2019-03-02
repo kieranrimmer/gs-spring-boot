@@ -41,6 +41,8 @@ public class GCSServiceTest {
     @Test
     public void testCreateDummyCsv() throws Exception {
 
+        int rowRepetitions = 100000;
+
         PowerMockito.mockStatic(StorageFactory.class);
 
         GCSProvider dummyProvider = mock(GCSProvider.class);
@@ -51,10 +53,10 @@ public class GCSServiceTest {
 
         when(dummyProvider.getWriter(any(), any())).thenReturn(writer);
 
-        serviceUnderTest.createDummyCSV("bucket-name", "object-name");
+        serviceUnderTest.createDummyCSV("bucket-name", "object-name", 100000);
 
-        // don't forget header row contributes a +1
-        verify(writer, times(GCSService.getDefaultDummyRowCount() + 1)).write(any());
+        // don't forget header row contributes +1
+        verify(writer, times(100000 + 1)).write(any());
 
     }
 

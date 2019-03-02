@@ -2,6 +2,7 @@ package obfuscate.handler;
 
 import obfuscate.YAMLConfig;
 import obfuscate.dto.GCSObjectPayload;
+import obfuscate.dummydata.DummyCsvData;
 import obfuscate.service.GCSService;
 import obfuscate.service.MacService;
 import org.junit.Before;
@@ -27,15 +28,17 @@ import static org.mockito.Mockito.*;
 public class DeidentifyHandlerTest {
 
     @Autowired
-    YAMLConfig yamlConfig;
+    private YAMLConfig yamlConfig;
 
     @Mock
-    MacService macService;
+    private MacService macService;
 
-    ExecutorService executor;
+    private ExecutorService executor;
 
     @InjectMocks
-    DeidentifyHandler handlerUnderTest;
+    private DeidentifyHandler handlerUnderTest;
+
+    private final int CSV_ROW_REPETITIONS = 100000;
 
 
     @Before
@@ -68,8 +71,8 @@ public class DeidentifyHandlerTest {
         String testUrl = "testUrl";
         GCSService mockGcsService = mock(GCSService.class);
         GCSObjectPayload mockPayload = generateDummyGCSPayload(testBucket, testUrl);
-        handlerUnderTest.asyncCreateDummyCSV(mockGcsService, mockPayload);
-        verify(mockGcsService, times(1)).createDummyCSV(testBucket, testUrl);
+        handlerUnderTest.asyncCreateDummyCSV(mockGcsService, mockPayload, CSV_ROW_REPETITIONS);
+        verify(mockGcsService, times(1)).createDummyCSV(testBucket, testUrl, CSV_ROW_REPETITIONS);
     }
 
 

@@ -2,10 +2,8 @@ package obfuscate;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import obfuscate.common.KMSFactory;
-import obfuscate.dto.DeidentifyRequestPayload;
-import obfuscate.dto.GCSObjectPayload;
-import obfuscate.dto.KmsKeyWrapPayload;
-import obfuscate.dto.View;
+import obfuscate.dto.*;
+import obfuscate.dummydata.DummyCsvData;
 import obfuscate.service.GCSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,32 +25,32 @@ import obfuscate.handler.DeidentifyHandler;
 public class GCPObfuscateController {
 
     @Autowired
-    private YAMLConfig myConfig;
+    private YAMLConfig config;
 
     @Autowired
-    GCSService gcsService;
+    private GCSService gcsService;
 
     @Autowired
-    DeidentifyHandler deidentifyHandler;
+    private DeidentifyHandler deidentifyHandler;
 
     // Required for unit testing
-    public void setMyConfig(YAMLConfig config) {
-        myConfig = config;
+    public void setConfig(YAMLConfig _config) {
+        config = _config;
     }
     
     @RequestMapping("")
     public String index() {
-        return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
+        return "Welcome to the `" + config.getEnvironment() + "` environment.";
     }
 
     @RequestMapping("/hello")
     public String helloMessage() {
-        return "Welcome to the `" + myConfig.getEnvironment() + "` environment.";
+        return "Welcome to the `" + config.getEnvironment() + "` environment.";
     }
 
     @RequestMapping(value = "createDummyGcsCSV", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, String>> createDummyCsv(@RequestBody @JsonView(View.ApiV1.class) GCSObjectPayload requestBody) throws IOException {
-        Map<String, String> map = deidentifyHandler.asyncCreateDummyCSV(gcsService, requestBody);
+    public ResponseEntity<Map<String, String>> createDummyCsv(@RequestBody @JsonView(View.ApiV1.class) DummyCsvCreatePayload requestBody) throws IOException {
+        Map<String, String> map = deidentifyHandler.asyncCreateDummyCSV(gcsService, requestBody.getGcsObject(), requestBody.getRowCount());
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
