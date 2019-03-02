@@ -20,7 +20,7 @@ Then add the Env Var(s) as above manually.
 Add Maven configurations for running and testing the app using the IntelliJ UI.
 
 Configure the working directory to the folder containing `src`, `target` subdirectories.
-As of now, this is the `complete` directory.
+As of now, this is the `obfuscation` directory.
 
 ##### To run in dev mode
 

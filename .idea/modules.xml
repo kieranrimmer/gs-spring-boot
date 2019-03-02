@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/gcp_spring_boot.iml" filepath="$PROJECT_DIR$/.idea/gcp_spring_boot.iml" />
-      <module fileurl="file://$PROJECT_DIR$/complete/gs-spring-boot.iml" filepath="$PROJECT_DIR$/complete/gs-spring-boot.iml" />
     </modules>
   </component>
 </project>
