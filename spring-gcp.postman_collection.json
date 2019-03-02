@@ -42,7 +42,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"bucket\": \"kr-bucket-01-01\",\n\t\"url\": \"manual-dummy-2.csv\"\n}"
+					"raw": "{\n\t\"gcsObject\":\n\t{\n\t\t\"bucket\": \"kr-bucket-01-01\",\n\t\t\"url\": \"manual-dummy-new-01.csv\"\n\t},\n\t\"rowCount\": 100000\n}"
 				},
 				"url": {
 					"raw": "{{protocol}}://{{host}}:{{port}}/createDummyGcsCSV",
@@ -72,7 +72,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"sourceBucket\": \"kr-bucket-01-01\",\n    \"sourceUrl\": \"dummy-csv.csv\",\n    \"destBucket\": \"kr-bucket-01-01\",\n    \"destUrl\": \"obfuscated-24-csv.csv\",\n    \"obfuscationColumns\": [\n    \t1,\n    \t2\n    ],\n    \"kmsKeyWrap\": {\n\t    \"projectId\": \"ga-kr-181510\",\n\t    \"locationId\": \"global\",\n\t    \"keyRingId\": \"kr-o1-01\",\n\t    \"cryptoKeyId\": \"key-test-01\",\n\t    \"ciphertext\": \"CiQA7qO0gIRph78z+Nzdq+QkctKZneYfDkaNY3+DWhqIhPnFb7kSWQA3aarFYy7GPYVmSB3oYa20vWLYC/X4sv4t0110IhRqgdBBPbtZEEgeXg603rGFEDejeb3rHxyYNdi3HPhIwrZcsJhd2YL/IDF48yDSxk5Jvclh+yBntDrD\"\n\t}\n}"
+					"raw": "{\n    \"sourceBucket\": \"kr-bucket-01-01\",\n    \"sourceUrl\": \"dummy-csv.csv\",\n    \"destBucket\": \"kr-bucket-01-01\",\n    \"destUrl\": \"obfuscated-26-csv.csv\",\n    \"obfuscationColumns\": [\n    \t1,\n    \t2\n    ],\n    \"kmsKeyWrap\": {\n\t    \"projectId\": \"ga-kr-181510\",\n\t    \"locationId\": \"global\",\n\t    \"keyRingId\": \"kr-o1-01\",\n\t    \"cryptoKeyId\": \"key-test-01\",\n\t    \"ciphertext\": \"CiQA7qO0gIRph78z+Nzdq+QkctKZneYfDkaNY3+DWhqIhPnFb7kSWQA3aarFYy7GPYVmSB3oYa20vWLYC/X4sv4t0110IhRqgdBBPbtZEEgeXg603rGFEDejeb3rHxyYNdi3HPhIwrZcsJhd2YL/IDF48yDSxk5Jvclh+yBntDrD\"\n\t}\n}"
 				},
 				"url": {
 					"raw": "{{protocol}}://{{host}}:{{port}}/deidentifyWrappedHMAC",
@@ -162,7 +162,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"sourceBucket\": \"kr-bucket-01-01\",\n    \"sourceUrl\": \"dummy-csv.csv\",\n    \"destBucket\": \"kr-bucket-01-01\",\n    \"destUrl\": \"obfuscated-25-csv.csv\",\n    \"obfuscationColumns\": [\n    \t1,\n    \t2\n    ],\n    \"kmsKeyWrap\": {\n\t    \"plaintext\": \"5492ABB9AB00908F0AB7C78E43B731DDD7288B20F7F904388DD47C28A39F4122\"\n\t}\n}"
+					"raw": "{\n    \"sourceBucket\": \"kr-bucket-01-01\",\n    \"sourceUrl\": \"dummy-csv.csv\",\n    \"destBucket\": \"kr-bucket-01-01\",\n    \"destUrl\": \"obfuscated-27-csv.csv\",\n    \"obfuscationColumns\": [\n    \t1,\n    \t2\n    ],\n    \"kmsKeyWrap\": {\n\t    \"plaintext\": \"5492ABB9AB00908F0AB7C78E43B731DDD7288B20F7F904388DD47C28A39F4122\"\n\t}\n}"
 				},
 				"url": {
 					"raw": "{{protocol}}://{{host}}:{{port}}/deidentifyUnwrappedHMAC",
