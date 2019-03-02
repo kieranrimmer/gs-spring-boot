@@ -10,10 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
@@ -29,6 +27,12 @@ public class GCSService {
     private static final String DUMMY_CSV_HEADER = "empId,empName,squad,division,country,salary\r\n";
 
     private static final Map<Integer, ArrayList<String>> fillMap;
+
+    private static final int DEFAULT_DUMMY_ROW_COUNT = 100000;
+
+    public static int getDefaultDummyRowCount() {
+        return DEFAULT_DUMMY_ROW_COUNT;
+    }
 
     static {
         fillMap = new HashMap<>();
@@ -46,17 +50,22 @@ public class GCSService {
         storage = StorageOptions.getDefaultInstance().getService();
     }
 
+    // For testing
+    GCSService(Storage _storage) {
+        storage = _storage;
+    }
+
     public WriteChannel getWriter(String bucketName, String objName) throws IOException {
-        GCSProvider provider = new GCSProvider(storage);
+        GCSProvider provider = StorageFactory.gcsProviderFactory(storage);
         return provider.getWriter(bucketName, objName);
     }
 
     public void createDummyCSV(String bucketName, String objName) {
-        GCSProvider provider = new GCSProvider(storage);
+        GCSProvider provider = StorageFactory.gcsProviderFactory(storage);
         try (WriteChannel writer = provider.getWriter(bucketName, objName)) {
             byte[] header = DUMMY_CSV_HEADER.getBytes(UTF_8);
             writer.write(ByteBuffer.wrap(header, 0, header.length));
-            for(int i=0; i<100000; ++i) {
+            for(int i=0; i<DEFAULT_DUMMY_ROW_COUNT; ++i) {
                 byte[] content = MessageFormat.format("{0},{1},{2},{3},{4},{5}\r\n",
                         Integer.toString(i % 4),
                         fillMap.get(i % 4).get(0),

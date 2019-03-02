@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.storage.model.StorageObject;
+import obfuscate.service.GCSProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,10 @@ public class StorageFactory {
 			instance = buildService();
 		}
 		return instance;
+	}
+
+	public static GCSProvider gcsProviderFactory(com.google.cloud.storage.Storage _storage) {
+		return new GCSProvider(_storage);
 	}
 
 	private static Storage buildService() throws IOException, GeneralSecurityException {

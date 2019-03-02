@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import obfuscate.handler.DeidentifyHandler;
-import obfuscate.service.DLPService;
-import obfuscate.service.GCSService;
 import obfuscate.service.MacService;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,8 +78,7 @@ public class GCPObfuscateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(equalTo("Welcome to the `test` environment.")))
                 .andReturn();
-        String resultString = result.getResponse().getContentAsString();
-        assert resultString != null;
+        // String resultString = result.getResponse().getContentAsString();
     }
 
     @Test
@@ -94,8 +91,8 @@ public class GCPObfuscateControllerTest {
                 // .andExpect(content().string(equalTo("{\"gcsObject\":\"gs://fake-bucket/fake-url\"}")))
                 .andExpect(content().string(equalTo("{}")))
                 .andReturn();
-        String resultString = result.getResponse().getContentAsString();
-        assert resultString != null;
+        // String resultString = result.getResponse().getContentAsString();
+        // assert resultString != null;
     }
 
 
